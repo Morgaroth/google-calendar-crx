@@ -1,22 +1,17 @@
-Google Calendar for Chrome
-==========================
 
-[![Install now.](https://developer.chrome.com/webstore/images/ChromeWebStore_BadgeWBorder_v2_206x58.png)
-](https://chrome.google.com/webstore/detail/google-calendar-by-google/gmbgaklkmjakoegficnlkhebmhkjfich)
+### Installing
+
+* fetch sources
+    * by cloning repository using `git clone`
+    * simply download zip with source code and extract
+* open [chrome extensions tab](chrome://extensions/)
+* enable developer mode (in right upper corner)
+* click load extension without package
+* navigate to **src** directory in extracted sources
+* extension should appear next to address bar in chrome
+* click on it and authorize
+* click `right mouse button` and select Options, on options tab select rooms that You would like to show (and uncheck other)
 
 
-Easily check Google Calendar and add new events from websites you visit.
-------------------------------------------------------------------------
-Get a button on your browser toolbar that you can easily click to see upcoming events from Google Calendar,
-without ever leaving your page. And if you’re on sites that have special events encoded,
-you can click the button to instantly add events to your calendar.
-The button shows an orange plus sign whenever there are events on the page you’re viewing that can be added to your calendar.
-
-
-Features
---------
-* Displays a preview of your calendar while you’re navigating. (works on any page.)
-* If you’re on certain sites where it detects the presence of events, the icon changes to an orange “+”. Clicking that icon lets you add the event to your Google Calendar, and shows you a map (if there’s a location it could detect.)
-* Any site that uses the hCalendar microformat or derivative microformats such as hResume are supported.
-* This extension shows events from whatever calendars you are logged in within Chrome.
-* If you want to use a Google Apps calendar, you should login to that account first, then open the extension.
+### Credits
+Source code based on Google Calendar extension
