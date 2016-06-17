@@ -23,6 +23,7 @@
  */
 var background = {};
 
+
 /**
  * An in-memory log that stores the last N records.
  * @type {Array.<string>}

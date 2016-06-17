@@ -42,6 +42,7 @@ utils.MAX_CHARS_PER_FIELD_ = 300;
  * @return {CalendarEvent} The processed event.
  */
 utils.processEvent = function(event) {
+  console.log(event);
   if (!event.end) {  // If there's no end time, infer one as best as we can.
     var startMoment = moment(event.start);
     if (startMoment.hours() === 0 && startMoment.minutes() === 0) {
