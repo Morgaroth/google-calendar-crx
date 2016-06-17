@@ -237,7 +237,7 @@ feeds.fetchEvents = function () {
     chrome.extension.sendMessage({method: 'sync-icon.spinning.start'});
 
     feeds.lastFetchedAt = new Date();
-    background.updateBadge({'title': chrome.i18n.getMessage('fetching_feed')});
+    // background.updateBadge({'title': chrome.i18n.getMessage('fetching_feed')});
 
     chrome.storage.local.get('calendars', function (storage) {
         if (chrome.runtime.lastError) {
@@ -398,29 +398,29 @@ feeds.refreshUI = function () {
     feeds.determineNextEvents_();
 
     // If there are no more next events to show, reset the badge and bail out.
-    if (feeds.nextEvents.length === 0) {
-        background.updateBadge({
-            'text': '',
-            'title': chrome.i18n.getMessage('no_upcoming_events')
-        })
-        return;
-    }
+    // if (feeds.nextEvents.length === 0) {
+    //     background.updateBadge({
+    //         'text': '',
+    //         'title': chrome.i18n.getMessage('no_upcoming_events')
+    //     })
+    //     return;
+    // }
 
-    if (options.get(options.Options.BADGE_TEXT_SHOWN)) {
-        var nextEvent = feeds.nextEvents[0];
-        var badgeText = moment(nextEvent.start).lang('relative-formatter').fromNow();
+    // if (options.get(options.Options.BADGE_TEXT_SHOWN)) {
+        // var nextEvent = feeds.nextEvents[0];
+        // var badgeText = moment(nextEvent.start).lang('relative-formatter').fromNow();
 
-        background.updateBadge({
-            'color': nextEvent.feed.backgroundColor,
-            'text': badgeText,
-            'title': feeds.getTooltipForEvents_(feeds.nextEvents)
-        });
-    } else {  // User has chosen not to show a badge, but we still set a tooltip.
-        background.updateBadge({
-            'text': '',
-            'title': feeds.getTooltipForEvents_(feeds.nextEvents)
-        });
-    }
+        // background.updateBadge({
+        //     'color': nextEvent.feed.backgroundColor,
+        //     'text': badgeText,
+        //     'title': feeds.getTooltipForEvents_(feeds.nextEvents)
+        // });
+    // } else {  // User has chosen not to show a badge, but we still set a tooltip.
+    //     background.updateBadge({
+    //         'text': '',
+    //         'title': feeds.getTooltipForEvents_(feeds.nextEvents)
+    //     });
+    // }
 
     // Notify the browser action in case it's open.
     chrome.extension.sendMessage({method: 'sync-icon.spinning.stop'});

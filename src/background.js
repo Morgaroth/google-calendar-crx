@@ -203,10 +203,10 @@ background.listenForTabUpdates_ = function() {
 };
 
 
-/**
- * Update specific properties of the badge.
- * @param {background.BadgeProperties} props The properties to update.
- */
+// /**
+//  * Update specific properties of the badge.
+//  * @param {background.BadgeProperties} props The properties to update.
+//  */
 background.updateBadge = function(props) {
   if ('text' in props) {
     chrome.browserAction.setBadgeText({'text': props.text});

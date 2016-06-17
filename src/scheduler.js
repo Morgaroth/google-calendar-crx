@@ -30,7 +30,7 @@ var scheduler = {};
  * @const
  * @private
  */
-scheduler.CALENDARS_POLL_INTERVAL_MS_ = 6 * 60 * 60 * 1000;
+scheduler.CALENDARS_POLL_INTERVAL_MS_ = 60 * 60 * 1000;
 
 /**
  * Poll the server every hour for new calendar events, but not new calendars.
@@ -38,7 +38,7 @@ scheduler.CALENDARS_POLL_INTERVAL_MS_ = 6 * 60 * 60 * 1000;
  * @const
  * @private
  */
-scheduler.EVENTS_POLL_INTERVAL_MS_ = 60 * 60 * 1000;
+scheduler.EVENTS_POLL_INTERVAL_MS_ = 2 * 1000;
 
 /**
  * Update the badge every minute.
@@ -52,28 +52,28 @@ scheduler.BADGE_UPDATE_INTERVAL_MS_ = 60 * 1000;
  * Starts the scheduler that updates the badge (more often) and the feed from
  * the calendar (less often).
  */
-scheduler.start = function() {
-  background.log('scheduler.start()');
+scheduler.start = function () {
+    background.log('scheduler.start()');
 
-  // Do a one-time initial fetch on load. Settings are only refreshed when restarting Chrome.
-  feeds.fetchSettings();
-  feeds.fetchCalendars();
+    // Do a one-time initial fetch on load. Settings are only refreshed when restarting Chrome.
+    feeds.fetchSettings();
+    feeds.fetchCalendars();
 
-  window.setInterval(function() {
-    feeds.refreshUI();
+    window.setInterval(function () {
+        feeds.refreshUI();
 
-    var now = (new Date()).getTime();
-    if (!feeds.lastFetchedAt) {
-      // If never successfully fetched before, fetch the list of calendars now.
-      feeds.fetchSettings();
-      feeds.fetchCalendars();
-    } else {
-      var feedsFetchedAtMs = feeds.lastFetchedAt.getTime();
-      if (now - feedsFetchedAtMs > scheduler.CALENDARS_POLL_INTERVAL_MS_) {
-        feeds.fetchCalendars();  // Will trigger fetchEvents automatically.
-      } else if (now - feedsFetchedAtMs > scheduler.EVENTS_POLL_INTERVAL_MS_) {
-        feeds.fetchEvents();
-      }
-    }
-  }, scheduler.BADGE_UPDATE_INTERVAL_MS_);
+        var now = (new Date()).getTime();
+        if (!feeds.lastFetchedAt) {
+            // If never successfully fetched before, fetch the list of calendars now.
+            feeds.fetchSettings();
+            feeds.fetchCalendars();
+        } else {
+            var feedsFetchedAtMs = feeds.lastFetchedAt.getTime();
+            if (now - feedsFetchedAtMs > scheduler.CALENDARS_POLL_INTERVAL_MS_) {
+                feeds.fetchCalendars();  // Will trigger fetchEvents automatically.
+            } else if (now - feedsFetchedAtMs > scheduler.EVENTS_POLL_INTERVAL_MS_) {
+                feeds.fetchEvents();
+            }
+        }
+    }, scheduler.BADGE_UPDATE_INTERVAL_MS_);
 };

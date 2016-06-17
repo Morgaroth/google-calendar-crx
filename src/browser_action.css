@@ -54,13 +54,13 @@ header {
     z-index: 10;
 }
 
-#show_quick_add {
-    transition: transform 0.2s ease-in;
-}
-
-#show_quick_add.rotated {
-    transform: rotate(45deg);
-}
+/*#show_quick_add {*/
+    /*transition: transform 0.2s ease-in;*/
+/*}*/
+/**/
+/*#show_quick_add.rotated {*/
+    /*transform: rotate(45deg);*/
+/*}*/
 
 .popup-title a {
     font-size: 16px;
@@ -175,7 +175,7 @@ h2 {
 
 .start-time {
     color: #fff;
-    flex: 0 0 100px;
+    flex: 0 0 120px;
     font-size: 12px;
     overflow: hidden;
     text-align: right;
@@ -189,14 +189,14 @@ h2 {
     margin-top: 3px;
 }
 
-.detected-event .start-time {
-    background-color: #fff;
-    text-align: left;
-}
-
-.detected-event .start-time img {
-    margin: 6px 18px;
-}
+/*.detected-event .start-time {*/
+    /*background-color: #fff;*/
+    /*text-align: left;*/
+/*}*/
+/**/
+/*.detected-event .start-time img {*/
+    /*margin: 6px 18px;*/
+/*}*/
 
 .event-details {
     flex: 1;

@@ -212,7 +212,6 @@ browseraction.stopSpinnerRightNow = function () {
     $('#sync_now').removeClass('spinning');
 };
 
-/** @private */
 browseraction.createQuickAddEvent_ = function (room_email, start, timebox, name) {
     var quickAddUrl = browseraction.INSERT_API_URL.replace('{calendarId}', encodeURIComponent('primary'));
 
@@ -279,6 +278,8 @@ var sortByStartDates = function (a, b) {
 browseraction.showEventsFromFeed_ = function (events) {
     chrome.extension.getBackgroundPage().background.log('browseraction.showEventsFromFeed_()');
     $('#calendar-events').empty();
+
+    chrome.extension.getBackgroundPage().background.updateBadge({'title': ''});
 
     chrome.identity.getAuthToken({'interactive': false}, function (authToken) {
         if (chrome.runtime.lastError || !authToken) {
@@ -356,20 +357,27 @@ browseraction.showEventsFromFeed_ = function (events) {
                 base = prev.events[0];
             }
             if (next.start - prev.end >= MIN_DELAY) {
+                var beginDateTS = utils.fromIso8601(prev.end).startOf('day').valueOf();
+                var endDateTS = utils.fromIso8601(next.start).startOf('day').valueOf();
                 room.holes.push({
                     start: prev.end,
+                    startDate: beginDateTS,
+                    endDate: endDateTS,
+                    moreDays: beginDateTS != endDateTS,
                     end: next.start,
                     next: next,
                     after: prev,
                     backgroundColor: base.feed.backgroundColor,
                     foregroundColor: base.feed.foregroundColor,
                     name: base.feed.title,
-                    room_id: base.feed.id
+                    room_id: base.feed.id,
+                    tillDayEnd: false,
+                    fromMorning: false
                 })
             }
         }
         var now = moment().valueOf();
-        var midnight = moment().hours(0).minutes(0).seconds(0).add(1, 'day').valueOf();
+        var midnight = moment().startOf('day').add(1, 'day').valueOf();
         // console.log("current time", now, "midnight", midnight);
         if (room.aggregated.length > 0) {
             var eventStart = room.aggregated[0].start;
@@ -379,7 +387,7 @@ browseraction.showEventsFromFeed_ = function (events) {
                 room.isFreeTo = 0;
             }
         } else {
-            room.isFreeTo = -1;
+            console.log("WTF")
         }
     }
 
@@ -392,10 +400,30 @@ browseraction.showEventsFromFeed_ = function (events) {
         if (room.isFreeTo != 0) {
             current.push(room)
         }
-        future = future.concat(room.holes)
+        for (j = 0; j < room.holes.length; j++) {
+            var hole = room.holes[j];
+            if (hole.moreDays) {
+                var e = JSON.parse(JSON.stringify(hole));
+                e.end = moment(e.start).startOf('hour').hours(18).valueOf();
+                e.endDate = moment(e.end).startOf('day').valueOf();
+                e.tillDayEnd = true;
+                e.moreDays = false;
+                future.push(e);
+                e = JSON.parse(JSON.stringify(hole));
+                e.start = moment(e.end).startOf('hour').hours(8).valueOf();
+                e.fromMorning = true;
+                e.startDate = moment(e.start).startOf('day').valueOf();
+                e.moreDays = false;
+                future.push(e);
+            } else {
+                future.push(hole)
+            }
+        }
     }
     future = future.sort(sortByStartDates);
-
+    current = current.sort(function (a, b) {
+        return a.end < b.end
+    });
     // console.log("starting with current", current, "future", future);
 
 
@@ -406,11 +434,11 @@ browseraction.showEventsFromFeed_ = function (events) {
     if (current.length > 0) {
         for (i = 0; i < current.length; i++) {
             room = current[i];
-            if (room.isFreeTo >= 0) {
-                end = utils.fromIso8601(room.isFreeTo);
-                browseraction.createFreeElemDiv_(room).appendTo($('#calendar-events'));
-            }
+            end = utils.fromIso8601(room.isFreeTo);
+            browseraction.createFreeElemDiv_(room).appendTo($('#calendar-events'));
         }
+        var mins = moment(current[0].isFreeTo).diff(moment(), 'minutes');
+        chrome.extension.getBackgroundPage().background.updateBadge({'title': '' + mins});
     } else {
         $('<div>').addClass('no-events-today')
             .append(i18translate('no_room_this_moment'))
@@ -420,7 +448,7 @@ browseraction.showEventsFromFeed_ = function (events) {
     // Insert a date header for Today as the first item in the list. Any ongoing
     // multi-day events (i.e., started last week, ends next week) will be shown
     // under today's date header, not under the date it started.
-    var headerDate = moment().hours(0).minutes(0).seconds(0).millisecond(0);
+    var headerDate = moment().startOf('day');
     $('<div>').addClass('date-header')
         .text(i18translate('today'))
         .appendTo($('#calendar-events'));
@@ -450,7 +478,16 @@ browseraction.showEventsFromFeed_ = function (events) {
         }
         browseraction.createFutureHoleDiv_(event).appendTo($('#calendar-events'));
     }
+
 };
+
+function meetingBtn(room_id, start, timebox, title, hoverInfoKey, iconName, cssClass) {
+    return $('<div>').attr({'title': i18translate(hoverInfoKey)}).on('click', function () {
+        browseraction.createQuickAddEvent_(room_id, start, timebox, title);
+    }).append($('<img>').addClass(cssClass).attr({
+        'src': chrome.extension.getURL(iconName)
+    }));
+}
 
 /**
  * Creates a <div> that renders a detected event or a fetched event.
@@ -459,9 +496,18 @@ browseraction.showEventsFromFeed_ = function (events) {
  * @private
  */
 browseraction.createFutureHoleDiv_ = function (hole) {
+    var dateTimeFormat = 'HH:mm';
     var start = utils.fromIso8601(hole.start);
     var end = utils.fromIso8601(hole.end);
 
+    var s = start.format(dateTimeFormat);
+    if (hole.fromMorning) {
+        s = i18translate('from_morning');
+    }
+    var e = end.format(dateTimeFormat);
+    if (hole.tillDayEnd) {
+        e = i18translate('till_day_end');
+    }
     var eventDiv = /** @type {jQuery} */ ($('<div>')
         .addClass('event')
         .attr({'data-url': hole.gcal_url}));
@@ -476,13 +522,10 @@ browseraction.createFutureHoleDiv_ = function (hole) {
     // });
 
     // var dateTimeFormat = options.get('format24HourTime') ? 'HH:mm' : 'h:mma';
-    var dateTimeFormat = 'HH:mm';
     var startTimeDiv = $('<div>').addClass('start-time');
 
     startTimeDiv.css({'background-color': hole.backgroundColor});
     // if (!event.allday && !isDetectedEvent) {
-    var s = start.format(dateTimeFormat);
-    var e = end.format(dateTimeFormat);
     startTimeDiv.text(s + ' - ' + e);
     // }
     startTimeDiv.appendTo(eventDiv);
@@ -491,17 +534,9 @@ browseraction.createFutureHoleDiv_ = function (hole) {
         .addClass('event-details')
         .appendTo(eventDiv);
 
-    $('<div>').attr({'title': 'Create meeting 30 min'}).on('click', function () {
-        browseraction.createQuickAddEvent_(hole.room_id, start, 30, 'Meeting');
-    }).append($('<img>').addClass('meeting-icon').attr({
-        'src': chrome.extension.getURL('icons/meeting.png')
-    })).appendTo(eventDetails);
+    meetingBtn(hole.room_id, start, 30, 'Meeting', 'meeting_30', 'icons/meeting.png', 'meeting-icon').appendTo(eventDetails);
 
-    $('<div>').attr({'title': 'Create StandUp meeting 15 min'}).on('click', function () {
-        browseraction.createQuickAddEvent_(hole.room_id, start, 15, 'Stand Up');
-    }).append($('<img>').addClass('standup-icon').attr({
-        'src': chrome.extension.getURL('icons/standup.png')
-    })).appendTo(eventDetails);
+    meetingBtn(hole.room_id, start, 15, 'Stand Up', 'standup_15', 'icons/standup.png', 'standup-icon').appendTo(eventDetails);
     //
     // } else if (event.location) {
     //     $('<a>').attr({
@@ -552,17 +587,9 @@ browseraction.createFreeElemDiv_ = function (room) {
         .addClass('event-details')
         .appendTo(eventDiv);
 
-    $('<div>').attr({'title': 'Create meeting 30 min'}).on('click', function () {
-        browseraction.createQuickAddEvent_(hole.room_id, moment().valueOf(), 30, 'Meeting');
-    }).append($('<img>').addClass('meeting-icon').attr({
-        'src': chrome.extension.getURL('icons/meeting.png')
-    })).appendTo(eventDetails);
+    meetingBtn(room.id, moment().valueOf(), 30, 'Meeting', 'meeting_30', 'icons/meeting.png', 'meeting-icon').appendTo(eventDetails);
 
-    $('<div>').attr({'title': 'Create StandUp meeting 15 min'}).on('click', function () {
-        browseraction.createQuickAddEvent_(hole.room_id, moment().valueOf(), 15, 'Stand Up');
-    }).append($('<img>').addClass('standup-icon').attr({
-        'src': chrome.extension.getURL('icons/standup.png')
-    })).appendTo(eventDetails);
+    meetingBtn(room.id, moment().valueOf(), 15, 'Stand Up', 'standup_15', 'icons/standup.png', 'standup-icon').appendTo(eventDetails);
 
     // The location icon goes before the title because it floats right.
     var eventTitle = $('<div>').addClass('event-title').text(room.name);

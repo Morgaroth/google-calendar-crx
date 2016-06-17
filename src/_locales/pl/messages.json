@@ -1,4 +1,20 @@
 {
+  "from_morning": {
+    "message": "od rana",
+    "description": "Morning word."
+  },
+  "till_day_end": {
+    "message": "do wieczora",
+    "description": "Day end."
+  },
+  "standup_15": {
+    "message": "Utwórz 15min spotkanie - standup",
+    "description": "Create standup 15 min."
+  },
+  "meeting_30": {
+    "message": "Utwórz 30min spotkanie",
+    "description": "Create meeting 30 min."
+  },
   "until": {
     "message": "wolne do",
     "description": "until word"
