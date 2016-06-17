@@ -32,6 +32,10 @@ browseraction.QUICK_ADD_API_URL_ = 'https://www.googleapis.com/calendar/v3/calen
 browseraction.INSERT_API_URL = 'https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events';
 browseraction.PROFILE_API_URL = 'https://www.googleapis.com/plus/v1/people/me?key={apiKey}';
 
+function i18translate(key) {
+    return chrome.i18n.getMessage(key)
+}
+
 /**
  * Initializes UI elements in the browser action popup.
  */
@@ -65,7 +69,7 @@ browseraction.fillMessages_ = function () {
 
     // Load internationalized messages.
     $('.i18n').each(function () {
-        var i18nText = chrome.i18n.getMessage($(this).attr('id').toString());
+        var i18nText = i18translate($(this).attr('id').toString());
         if (!i18nText) {
             chrome.extension.getBackgroundPage().background.log(
                 'Error getting string for: ', $(this).attr('id').toString());
@@ -81,7 +85,7 @@ browseraction.fillMessages_ = function () {
 
     $('[data-href="calendar_ui_url"]').attr('href', constants.CALENDAR_UI_URL);
     $('#quick-add-event-title').attr({
-        'placeholder': chrome.i18n.getMessage('event_title_placeholder'
+        'placeholder': i18translate('event_title_placeholder'
         )
     });
 };
@@ -115,7 +119,7 @@ browseraction.loadCalendarsIntoQuickAdd_ = function () {
 /** @private */
 browseraction.installButtonClickHandlers_ = function () {
     $('#authorization_required').on('click', function () {
-        $('#authorization_required').text(chrome.i18n.getMessage('authorization_in_progress'));
+        $('#authorization_required').text(i18translate('authorization_in_progress'));
         chrome.extension.sendMessage({method: 'authtoken.update'});
     });
 
@@ -245,7 +249,7 @@ browseraction.createQuickAddEvent_ = function (room_email, start, timebox, name)
             error: function (response) {
                 console.log("error", response);
                 browseraction.stopSpinner();
-                $('#info_bar').text(chrome.i18n.getMessage('error_saving_new_event')).slideDown();
+                $('#info_bar').text(i18translate('error_saving_new_event')).slideDown();
                 window.setTimeout(function () {
                     $('#info_bar').slideUp();
                 }, constants.INFO_BAR_DISMISS_TIMEOUT_MS);
@@ -396,7 +400,7 @@ browseraction.showEventsFromFeed_ = function (events) {
 
 
     $('<div>').addClass('date-header')
-        .text(chrome.i18n.getMessage('free_rooms'))
+        .text(i18translate('free_rooms'))
         .appendTo($('#calendar-events'));
 
     if (current.length > 0) {
@@ -409,7 +413,7 @@ browseraction.showEventsFromFeed_ = function (events) {
         }
     } else {
         $('<div>').addClass('no-events-today')
-            .append(chrome.i18n.getMessage('no_room_this_moment'))
+            .append(i18translate('no_room_this_moment'))
             .appendTo($('#calendar-events'));
     }
 
@@ -418,14 +422,14 @@ browseraction.showEventsFromFeed_ = function (events) {
     // under today's date header, not under the date it started.
     var headerDate = moment().hours(0).minutes(0).seconds(0).millisecond(0);
     $('<div>').addClass('date-header')
-        .text(chrome.i18n.getMessage('today'))
+        .text(i18translate('today'))
         .appendTo($('#calendar-events'));
 
     // If there are no events today, then avoid showing an empty date section.
     if (events.length == 0 ||
         moment(events[0].start).diff(headerDate, 'hours') > 23) {
         $('<div>').addClass('no-events-today')
-            .append(chrome.i18n.getMessage('no_events_today'))
+            .append(i18translate('no_events_today'))
             .appendTo($('#calendar-events'));
     }
 
@@ -466,26 +470,16 @@ browseraction.createFutureHoleDiv_ = function (hole) {
         return eventDiv;
     }
 
-    eventDiv.on('click', function () {
-        console.log(hole);
-        browseraction.createQuickAddEvent_(hole.room_id, start, 5, 'Stand Up');
-    });
+    // eventDiv.on('click', function () {
+    //     console.log(hole);
+    //     browseraction.createQuickAddEvent_(hole.room_id, start, 5, 'Stand Up');
+    // });
 
     // var dateTimeFormat = options.get('format24HourTime') ? 'HH:mm' : 'h:mma';
     var dateTimeFormat = 'HH:mm';
     var startTimeDiv = $('<div>').addClass('start-time');
-    // if (isDetectedEvent) {
-    //   startTimeDiv.append(
-    //     $('<img>').attr({
-    //         'width': 19,
-    //         'height': 19,
-    //         'src': chrome.extension.getURL('icons/calendar_add_38.png'),
-    //         'alt': chrome.i18n.getMessage('add_to_google_calendar')
-    //       })
-    //     );
-    // } else {
+
     startTimeDiv.css({'background-color': hole.backgroundColor});
-    // }
     // if (!event.allday && !isDetectedEvent) {
     var s = start.format(dateTimeFormat);
     var e = end.format(dateTimeFormat);
@@ -497,13 +491,17 @@ browseraction.createFutureHoleDiv_ = function (hole) {
         .addClass('event-details')
         .appendTo(eventDiv);
 
-    // if (event.hangout_url) {
-    //     $('<a>').attr({
-    //         'href': event.hangout_url,
-    //         'target': '_blank'
-    //     }).append($('<img>').addClass('video-call-icon').attr({
-    //         'src': chrome.extension.getURL('icons/ic_action_video.png')
-    //     })).appendTo(eventDetails);
+    $('<div>').attr({'title': 'Create meeting 30 min'}).on('click', function () {
+        browseraction.createQuickAddEvent_(hole.room_id, start, 30, 'Meeting');
+    }).append($('<img>').addClass('meeting-icon').attr({
+        'src': chrome.extension.getURL('icons/meeting.png')
+    })).appendTo(eventDetails);
+
+    $('<div>').attr({'title': 'Create StandUp meeting 15 min'}).on('click', function () {
+        browseraction.createQuickAddEvent_(hole.room_id, start, 15, 'Stand Up');
+    }).append($('<img>').addClass('standup-icon').attr({
+        'src': chrome.extension.getURL('icons/standup.png')
+    })).appendTo(eventDetails);
     //
     // } else if (event.location) {
     //     $('<a>').attr({
@@ -534,10 +532,10 @@ browseraction.createFreeElemDiv_ = function (room) {
         .addClass('event')
         .attr({'data-url': room.gcal_url}));
 
-    eventDiv.on('click', function () {
-        console.log("ceate event here", room);
-        browseraction.createQuickAddEvent_(room.id, moment().valueOf(), 5, 'Stand Up');
-    });
+    // eventDiv.on('click', function () {
+    //     console.log("ceate event here", room);
+    //     browseraction.createQuickAddEvent_(room.id, moment().valueOf(), 5, 'Stand Up');
+    // });
 
     // var timeFormat = options.get('format24HourTime') ? 'HH:mm' : 'h:mm';
     var timeFormat = 'HH:mm';
@@ -546,7 +544,7 @@ browseraction.createFreeElemDiv_ = function (room) {
 
     startTimeDiv.css({'background-color': room.backgroundColor});
 
-    startTimeDiv.text('until ' + end.format(dateTimeFormat));
+    startTimeDiv.text(i18translate('until') + ' ' + end.format(dateTimeFormat));
 
     startTimeDiv.appendTo(eventDiv);
 
@@ -554,14 +552,17 @@ browseraction.createFreeElemDiv_ = function (room) {
         .addClass('event-details')
         .appendTo(eventDiv);
 
-    // if (room.location) {
-    //     $('<a>').attr({
-    //         'href': 'https://maps.google.com?q=' + encodeURIComponent(room.location),
-    //         'target': '_blank'
-    //     }).append($('<img>').addClass('location-icon').attr({
-    //         'src': chrome.extension.getURL('icons/ic_action_place.png')
-    //     })).appendTo(eventDetails);
-    // }
+    $('<div>').attr({'title': 'Create meeting 30 min'}).on('click', function () {
+        browseraction.createQuickAddEvent_(hole.room_id, moment().valueOf(), 30, 'Meeting');
+    }).append($('<img>').addClass('meeting-icon').attr({
+        'src': chrome.extension.getURL('icons/meeting.png')
+    })).appendTo(eventDetails);
+
+    $('<div>').attr({'title': 'Create StandUp meeting 15 min'}).on('click', function () {
+        browseraction.createQuickAddEvent_(hole.room_id, moment().valueOf(), 15, 'Stand Up');
+    }).append($('<img>').addClass('standup-icon').attr({
+        'src': chrome.extension.getURL('icons/standup.png')
+    })).appendTo(eventDetails);
 
     // The location icon goes before the title because it floats right.
     var eventTitle = $('<div>').addClass('event-title').text(room.name);

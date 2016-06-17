@@ -1,4 +1,24 @@
 {
+  "until": {
+    "message": "until",
+    "description": "Until word."
+  },
+  "free_rooms": {
+    "message": "Available rooms now",
+    "description": "Free rooms currently."
+  },
+  "no_room_this_moment": {
+    "message": "Any available room at this moment :(",
+    "description": "Free rooms currently."
+  },
+  "today": {
+    "message": "Today",
+    "description": "Free rooms currently."
+  },
+  "logo_text": {
+    "message": "Free rooms",
+    "description": "The name of the Calendar product, including the word Google."
+  },
   "google_calendar_extension_name": {
     "message": "Google Calendar (by Google)",
     "description": "The name of this extension."
@@ -6,10 +26,6 @@
   "google_calendar_extension_desc": {
     "message": "Easily check Google Calendar and add new events from websites you visit.",
     "description": "Description of what this extension does."
-  },
-  "logo_text": {
-    "message": "Google Calendar",
-    "description": "The name of the Calendar product, including the word Google."
   },
   "read_more_at_original_url": {
     "message": "Read more at the original site: ",

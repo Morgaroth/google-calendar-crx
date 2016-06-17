@@ -1,15 +1,7 @@
 {
-  "google_calendar_extension_name": {
-    "message": "Google Kalendarz (od Google)",
-    "description": "The name of this extension."
-  },
-  "google_calendar_extension_desc": {
-    "message": "Łatwo sprawdzaj Kalendarz Google i dodawaj nowe zdarzenia ze stron które odwiedzasz.",
-    "description": "Description of what this extension does."
-  },
-  "logo_text": {
-    "message": "Wolne pokoje",
-    "description": "The name of the product."
+  "until": {
+    "message": "wolne do",
+    "description": "until word"
   },
   "free_rooms": {
     "message": "Wolne pokoje teraz",
@@ -22,6 +14,18 @@
   "today": {
     "message": "Dzisiaj",
     "description": "Free rooms currently."
+  },
+  "logo_text": {
+    "message": "Wolne pokoje",
+    "description": "The name of the product."
+  },
+  "google_calendar_extension_name": {
+    "message": "Google Kalendarz (od Google)",
+    "description": "The name of this extension."
+  },
+  "google_calendar_extension_desc": {
+    "message": "Łatwo sprawdzaj Kalendarz Google i dodawaj nowe zdarzenia ze stron które odwiedzasz.",
+    "description": "Description of what this extension does."
   },
   "read_more_at_original_url": {
     "message": "Przeczytaj więcej na orginalnej stronie: ",
