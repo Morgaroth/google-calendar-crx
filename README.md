@@ -4,7 +4,7 @@
 * fetch sources
     * by cloning repository using `git clone`
     * simply download zip with source code and extract
-* open [chrome extensions tab](chrome://extensions/)
+* open [chrome extensions tab](chrome://extensions/) - paste `chrome://extensions/` in address bar
 * enable developer mode (in right upper corner)
 * click load extension without package
 * navigate to **src** directory in extracted sources
