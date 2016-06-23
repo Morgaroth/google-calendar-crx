@@ -268,6 +268,8 @@ browseraction.createQuickAddEvent_ = function (room_email, start, timebox, name,
 var sortByStartDates = function (a, b) {
     if (a.start != b.start) {
         return a.start - b.start;
+    } else if (a.end != b.end) {
+        return a.end - b.end;
     } else {
         return a.name.localeCompare(b.name);
     }
