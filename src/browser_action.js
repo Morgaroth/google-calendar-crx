@@ -212,7 +212,7 @@ browseraction.stopSpinnerRightNow = function () {
     $('#sync_now').removeClass('spinning');
 };
 
-browseraction.createQuickAddEvent_ = function (room_email, start, timebox, name) {
+browseraction.createQuickAddEvent_ = function (room_email, start, timebox, name, roomName) {
     var quickAddUrl = browseraction.INSERT_API_URL.replace('{calendarId}', encodeURIComponent('primary'));
 
     chrome.identity.getAuthToken({'interactive': false}, function (authToken) {
@@ -220,7 +220,6 @@ browseraction.createQuickAddEvent_ = function (room_email, start, timebox, name)
             chrome.extension.getBackgroundPage().background.log('getAuthToken', chrome.runtime.lastError.message);
             return;
         }
-        _gaq.push(['_trackEvent', 'Quick Add', 'Add']);
 
         browseraction.startSpinner();
         var body = {
@@ -230,7 +229,8 @@ browseraction.createQuickAddEvent_ = function (room_email, start, timebox, name)
             end: {dateTime: moment(start).add('minutes', timebox).format()},
             start: {dateTime: moment(start).format()},
             summary: name,
-            description: "_______\nCreated using MJ extension."
+            description: "_______\nCreated using MJ extension.",
+            location: roomName
         };
         console.log('body', JSON.stringify(body));
         $.ajax(quickAddUrl, {
@@ -266,7 +266,11 @@ browseraction.createQuickAddEvent_ = function (room_email, start, timebox, name)
 };
 
 var sortByStartDates = function (a, b) {
-    return a.start - b.start;
+    if (a.start != b.start) {
+        return a.start - b.start;
+    } else {
+        return a.name.localeCompare(b.name);
+    }
 };
 
 /**
@@ -481,9 +485,9 @@ browseraction.showEventsFromFeed_ = function (events) {
 
 };
 
-function meetingBtn(room_id, start, timebox, title, hoverInfoKey, iconName, cssClass) {
+function meetingBtn(room_id, start, timebox, title, hoverInfoKey, iconName, cssClass, roomName) {
     return $('<div>').attr({'title': i18translate(hoverInfoKey)}).on('click', function () {
-        browseraction.createQuickAddEvent_(room_id, start, timebox, title);
+        browseraction.createQuickAddEvent_(room_id, start, timebox, title, roomName);
     }).append($('<img>').addClass(cssClass).attr({
         'src': chrome.extension.getURL(iconName)
     }));
@@ -534,9 +538,13 @@ browseraction.createFutureHoleDiv_ = function (hole) {
         .addClass('event-details')
         .appendTo(eventDiv);
 
-    meetingBtn(hole.room_id, start, 30, 'Meeting', 'meeting_30', 'icons/meeting.png', 'meeting-icon').appendTo(eventDetails);
+    if (moment(hole.end).diff(moment(hole.start), 'minutes') >= 30) {
+        meetingBtn(hole.room_id, start, 30, 'Meeting', 'meeting_30', 'icons/meeting.png', 'meeting-icon', hole.name).appendTo(eventDetails);
+    }
 
-    meetingBtn(hole.room_id, start, 15, 'Stand Up', 'standup_15', 'icons/standup.png', 'standup-icon').appendTo(eventDetails);
+    if (moment(hole.end).diff(moment(hole.start), 'minutes') >= 15) {
+        meetingBtn(hole.room_id, start, 15, 'Stand Up', 'standup_15', 'icons/standup.png', 'standup-icon', hole.name).appendTo(eventDetails);
+    }
     //
     // } else if (event.location) {
     //     $('<a>').attr({
@@ -587,10 +595,13 @@ browseraction.createFreeElemDiv_ = function (room) {
         .addClass('event-details')
         .appendTo(eventDiv);
 
-    meetingBtn(room.id, moment().valueOf(), 30, 'Meeting', 'meeting_30', 'icons/meeting.png', 'meeting-icon').appendTo(eventDetails);
+    if (moment(room.isFreeTo).diff(moment(), 'minutes') >= 30) {
+        meetingBtn(room.id, moment().valueOf(), 30, 'Meeting', 'meeting_30', 'icons/meeting.png', 'meeting-icon', room.name).appendTo(eventDetails);
+    }
 
-    meetingBtn(room.id, moment().valueOf(), 15, 'Stand Up', 'standup_15', 'icons/standup.png', 'standup-icon').appendTo(eventDetails);
-
+    if (moment(room.isFreeTo).diff(moment(), 'minutes') >= 15) {
+        meetingBtn(room.id, moment().valueOf(), 15, 'Stand Up', 'standup_15', 'icons/standup.png', 'standup-icon', room.name).appendTo(eventDetails);
+    }
     // The location icon goes before the title because it floats right.
     var eventTitle = $('<div>').addClass('event-title').text(room.name);
     // if (room.responseStatus == constants.EVENT_STATUS_DECLINED) {
